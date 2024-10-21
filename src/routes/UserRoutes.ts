@@ -8,6 +8,9 @@ import { protectUser } from "../middlewares/authMiddleware";
 import { ProfileRepository } from "../repositories/ProfileRepository";
 import { ProfileInteractor } from "../interactors/ProfileInteractor";
 import { ProfileController } from "../controllers/ProfileController";
+import { ConnectionRepository } from "../repositories/ConnectionRepository";
+import { ConnectionInteractor } from "../interactors/ConnectionInteractor";
+import { ConnectionController } from "../controllers/ConnectionController";
 const UserRouter = Router()
 
 const userRepository = new UserRepository()
@@ -16,6 +19,12 @@ const mailer = new Mailer()
 const broker = new MessageBroker()
 const interactor = new UserInteractor(userRepository, mailer, broker)
 const profileInteractor = new ProfileInteractor(userRepository, profileRepository, broker)
+
+
+const connectionRepository = new ConnectionRepository()
+const connectionInteractor = new ConnectionInteractor(connectionRepository)
+const connectionController = new ConnectionController(connectionInteractor)
+
 
 const authController = new AuthController(interactor)
 const profileController = new ProfileController(interactor, profileInteractor)
@@ -40,6 +49,6 @@ UserRouter.post("/update-profile-image", protectUser, profileController.updatePr
 UserRouter.post("/update-title-image", protectUser, profileController.updateTitleImage.bind(profileController));
 
 
-
-
+UserRouter.post("/follower/:followerId/user/:userId", protectUser, connectionController.followUser.bind(connectionController))
+UserRouter.delete('/follower/:followerId/user/:userId', protectUser, connectionController.unfollowUser.bind(connectionController))
 export default UserRouter
