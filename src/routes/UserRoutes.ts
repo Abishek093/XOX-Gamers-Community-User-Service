@@ -44,11 +44,25 @@ UserRouter.post("/refresh-token", authController.refreshAccessToken.bind(authCon
 /* Profile Routes */
 UserRouter.patch("/update-user/:id", protectUser, profileController.updateUser.bind(profileController));
 UserRouter.post("/upload-url", profileController.generatePresignedUrl.bind(profileController));
-
 UserRouter.post("/update-profile-image", protectUser, profileController.updateProfileImage.bind(profileController));
 UserRouter.post("/update-title-image", protectUser, profileController.updateTitleImage.bind(profileController));
+/** */
 
-
+/**Connection routes */
+UserRouter.get('/searchUsers', protectUser, connectionController.fetchSearchResults.bind(connectionController))
+UserRouter.get("/users/:username", protectUser, connectionController.fetchUserDetails.bind(connectionController))
 UserRouter.post("/follower/:followerId/user/:userId", protectUser, connectionController.followUser.bind(connectionController))
 UserRouter.delete('/follower/:followerId/user/:userId', protectUser, connectionController.unfollowUser.bind(connectionController))
+UserRouter.get("/followerStatus/:ownUserId/user/:userId", protectUser, connectionController.getFollowStatus.bind(connectionController))
+UserRouter.get("/fetchFollowers/:userId", connectionController.fetchFollowers.bind(connectionController))
+UserRouter.get("/fetchFollowing/:userId", connectionController.fetchFollowing.bind(connectionController))
+UserRouter.get("/fetch-friend-requests/:userId", protectUser, connectionController.getFollowRequest.bind(connectionController))
+UserRouter.post("/accept-friend-request/:requestId", protectUser, connectionController.acceptFriendRequest.bind(connectionController))
+UserRouter.post("/reject-friend-request/:requestId", protectUser, connectionController.rejectFriendRequest.bind(connectionController))
+
+
+/** */
+
+
+
 export default UserRouter

@@ -27,7 +27,7 @@ import { UserModel, IUser } from "../Models/UserModel";
 import CustomError from "../utils/CustomError";
 export const protectUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const token = req.header("Authorization");
-  console.log('req.headers',req.headers)
+  // console.log('req.headers',req.headers)
   if (!token || !token.startsWith("Bearer ")) {
     console.log("No token or invalid format");
     // throw new CustomError("Not authorized, no token or invalid format", 401)
