@@ -1,7 +1,7 @@
 import { User } from "../entities/User";
 import { IConnectionRepository } from "../interfaces/IConnectionRepository";
 import { Follower, IFollower, IFollowerWithDetails } from "../Models/FollowModel";
-import { UserMapper, UserModel } from "../Models/UserModel";
+import { IUser, UserMapper, UserModel } from "../Models/UserModel";
 import CustomError from "../utils/CustomError";
 
 export class ConnectionRepository implements IConnectionRepository {
@@ -162,5 +162,17 @@ export class ConnectionRepository implements IConnectionRepository {
       }
    }
 
+   async handleFetchSuggestions(): Promise<IUser[]> {
+      try {
+         const suggestions = await UserModel.find()
+           .sort({ createdAt: -1 })
+           .limit(10)
+           .select('id username displayName profileImage');
+         return suggestions;
+      } catch (error) {
+         throw new CustomError("Error fetching suggestions: " + (error instanceof Error ? error.message : "Unknown error"), 500);
+      }
+    }
+  
 
 }

@@ -72,3 +72,18 @@ export type PublishProfileImageUpdate={
     userId: string,
     profileImage?: string
 }
+
+export type userMessageToAdminService={
+    _id: string
+    email: string;
+    username: string;
+    displayName: string
+    dateOfBirth?: Date;
+    profileImage?: string;
+    bio?: string;
+    createdAt: Date;
+    updatedAt: Date;
+    isVerified: boolean;
+    isGoogleUser: boolean;
+    isBlocked: boolean;
+  }

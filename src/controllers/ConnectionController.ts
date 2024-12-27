@@ -53,6 +53,7 @@ export class ConnectionController {
 
   getFollowStatus = async (req: Request, res: Response, next: NextFunction) => {
     const { ownUserId, userId } = req.params;
+    console.log(ownUserId, userId)
     try {
       const status = await this.interarctor.getFollowStatus(ownUserId, userId);
       res.status(200).json({ status });
@@ -111,4 +112,13 @@ export class ConnectionController {
       next(error)
     }
   }
+
+  fetchSuggestions = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const suggestions = await this.interarctor.handleFetchSuggestions();
+      res.status(200).json({ results: suggestions })
+    } catch (error) {
+      next(error)
+    }
+  };
 }

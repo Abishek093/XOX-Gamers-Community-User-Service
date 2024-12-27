@@ -1,7 +1,8 @@
 import { IMessageBroker } from "../interfaces/IMessageBroker";
 import CircuitBreaker from "opossum";
 import { publishToQueue } from "../services/RabbitMQPublisher";
-import { PublishProfileImageUpdate, PublishUserData } from "../entities/Types";
+import { PublishProfileImageUpdate, PublishUserData, userMessageToAdminService } from "../entities/Types";
+import CustomError from "../utils/CustomError";
 
 const circuitBreakerOptions = {
   timeout: 5000,
@@ -39,6 +40,25 @@ export class MessageBroker implements IMessageBroker {
   }
 
   async publishProfileImageUpdateMessage(userData: PublishProfileImageUpdate): Promise<void> {
-    await this.circuitBreaker.fire(userData, 'content-service-update-profile-image');
+    try {
+      await Promise.all([
+        this.circuitBreaker.fire(userData, 'content-service-update-profile-image'),
+        this.circuitBreaker.fire(userData, 'streaming-service-update-profile-image')
+    ]);
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      console.error(error);
+      throw new CustomError("Internal Server Error", 500);
+    }
+  }
+
+  async PublishUserCreationMessageAdminServices(userData: userMessageToAdminService): Promise<void> {
+    await this.circuitBreaker.fire(userData, 'admin-service-create-user')
+  }
+
+  async publishStreamingServiceUserCreation(userData: PublishUserData): Promise<void> {
+    await this.circuitBreaker.fire(userData, 'streaming-service-create-user');
   }
 }

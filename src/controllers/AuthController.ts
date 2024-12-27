@@ -73,14 +73,13 @@ export class AuthController {
     }
   }
 
-  verifyLogin = async (req: Request, res: Response): Promise<void> => {
+  verifyLogin = async (req: Request, res: Response,  next: NextFunction): Promise<void> => {
     const { email, password } = req.body;
     try {
       const authenticatedUser = await this.interactor.VerifyUser(email, password);
       res.status(200).json(authenticatedUser)
-    } catch (error: any) {
-      console.error('Error in verifyLogin:', error.message);
-      handleResponse(res, 400, { message: error.message || 'An unknown error occurred' });
+    } catch (error) {
+      next(error)
     }
   };
 
@@ -119,15 +118,38 @@ export class AuthController {
     }
   };
 
-  refreshAccessToken = async (req: Request, res: Response): Promise<void> => {
+  refreshAccessToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { refreshToken } = req.body;
     try {
       const { accessToken, newRefreshToken } = await this.interactor.refreshAccessToken(refreshToken);
-      // handleResponse(res, 200, { accessToken, refreshToken: newRefreshToken });
       res.status(200).json({ accessToken, refreshToken: newRefreshToken })
-    } catch (error) {
-      console.error('Error in refreshAccessToken:', error);
-      handleResponse(res, 401, 'Invalid or expired refresh token');
+    }  catch (error: any) {
+      next(error)
     }
   };
+
+  updateProfilePassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { email, currentPassword, newPassword } = req.body;
+
+    try {
+        await this.interactor.updateProfilePassword(email, currentPassword, newPassword);
+        res.status(200).json({ status: 200, message: 'Password updated successfully' });
+    }  catch (error: any) {
+      next(error)
+    }
+};
+
+checkUsername = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const username = req.query.username;
+    if (typeof username !== 'string') {
+      throw new CustomError('Invalid username',400)
+    }
+      const isAvailable = await this.interactor.checkUserName(username);
+      res.status(200).json({ available: !isAvailable });
+  } catch (error) {
+      console.error("Error checking username availability: ", error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+};
 }

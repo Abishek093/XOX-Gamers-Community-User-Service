@@ -2,15 +2,38 @@
   "compilerOptions": {
       "target": "ES6",
       "module": "commonjs",
+      "moduleResolution": "node",
       "outDir": "./dist",
       "rootDir": "./src",
       "strict": true,
       "esModuleInterop": true,
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true,
-      "types": ["node", 
-      "express", 
-      // "./src/utils/types/session"
-  ]
+      "types": [
+        "node", 
+        "express",
+        "redis"
+      ]
   }
 }
+
+
+// {
+//   "compilerOptions": {
+//     "target": "es2020",
+//     "module": "commonjs",
+//     "lib": ["es2020"],
+//     "strict": true,
+//     "esModuleInterop": true,
+//     "skipLibCheck": true,
+//     "forceConsistentCasingInFileNames": true,
+//     "moduleResolution": "node",
+//     "resolveJsonModule": true,
+//     "baseUrl": ".",
+//     "paths": {
+//       "*": ["node_modules/*", "src/types/*"]
+//     }
+//   },
+//   "include": ["src/**/*"],
+//   "exclude": ["node_modules"]
+// }

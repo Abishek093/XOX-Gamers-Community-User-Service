@@ -29,7 +29,7 @@ const connectionController = new ConnectionController(connectionInteractor)
 const authController = new AuthController(interactor)
 const profileController = new ProfileController(interactor, profileInteractor)
 
-/* Public Routes */
+/* Auth Routes */
 UserRouter.post('/signup', authController.signupUser.bind(authController))
 UserRouter.post('/verify-otp', authController.verifyOtp.bind(authController))
 UserRouter.post("/resend-otp", authController.resendOTP.bind(authController))
@@ -39,6 +39,9 @@ UserRouter.post("/confirm-mail", authController.confirmMail.bind(authController)
 UserRouter.post("/confirm-mail-otp", authController.confirmMail.bind(authController));
 UserRouter.post("/update-password", authController.updatePassword.bind(authController));
 UserRouter.post("/refresh-token", authController.refreshAccessToken.bind(authController));
+UserRouter.get("/check-username", authController.checkUsername.bind(authController));
+UserRouter.post("/update-profile-password", protectUser, authController.updateProfilePassword.bind(authController))
+
 /** */
 
 /* Profile Routes */
@@ -49,6 +52,7 @@ UserRouter.post("/update-title-image", protectUser, profileController.updateTitl
 /** */
 
 /**Connection routes */
+UserRouter.get("/fetch-suggestions", protectUser, connectionController.fetchSuggestions.bind(connectionController))
 UserRouter.get('/searchUsers', protectUser, connectionController.fetchSearchResults.bind(connectionController))
 UserRouter.get("/users/:username", protectUser, connectionController.fetchUserDetails.bind(connectionController))
 UserRouter.post("/follower/:followerId/user/:userId", protectUser, connectionController.followUser.bind(connectionController))
@@ -59,8 +63,6 @@ UserRouter.get("/fetchFollowing/:userId", connectionController.fetchFollowing.bi
 UserRouter.get("/fetch-friend-requests/:userId", protectUser, connectionController.getFollowRequest.bind(connectionController))
 UserRouter.post("/accept-friend-request/:requestId", protectUser, connectionController.acceptFriendRequest.bind(connectionController))
 UserRouter.post("/reject-friend-request/:requestId", protectUser, connectionController.rejectFriendRequest.bind(connectionController))
-
-
 /** */
 
 

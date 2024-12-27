@@ -1,5 +1,6 @@
 import { UserDetails } from "../entities/Types";
 import { IFollower, IFollowerWithDetails } from "../Models/FollowModel";
+import { IUser } from "../Models/UserModel";
 
 export interface IConnectionInteractor{
     followUser(followerId: string, userId: string): Promise<{ status: string, message: string }>
@@ -12,4 +13,5 @@ export interface IConnectionInteractor{
     getFollowRequests(userId: string):Promise<IFollowerWithDetails[]>
     acceptFollowRequest(requestId: string): Promise<void>
     rejectFollowRequest(requestId: string): Promise<void>
+    handleFetchSuggestions(): Promise<IUser[]>
 }

@@ -14,4 +14,7 @@ export interface IUserInteractor {
     verifyConfirmMailOtp(otp: string, email: string): Promise<void>
     updatePassword(newPassword: string, email: string):Promise<void>
     refreshAccessToken(refreshToken: string): Promise<{ accessToken: string; newRefreshToken: string }>
+    updateProfilePassword(email: string, currentPassword: string, newPassword: string): Promise<void> 
+    checkUserName(username: string): Promise<boolean>
+    blockUnblockUser(userId: string, isBlocked: boolean): Promise<void>
 }

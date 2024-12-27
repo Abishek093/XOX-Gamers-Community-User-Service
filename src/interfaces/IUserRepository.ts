@@ -9,4 +9,6 @@ export interface IUserRepository {
     saveOtp(otp: number, userId: string):Promise<void>
     verifyOtp(otp: string, email: string): Promise<User>
     updateUserPassword(userId: string, newPassword: string): Promise<void>
+    updateProfilePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> 
+    blockUnblockUser(userId: string, isBlocked: boolean): Promise<void>
 }

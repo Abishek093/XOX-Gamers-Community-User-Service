@@ -1,5 +1,6 @@
 import { User } from "../entities/User";
 import { IFollower, IFollowerWithDetails } from "../Models/FollowModel";
+import { IUser } from "../Models/UserModel";
 
 export interface IConnectionRepository{
     findFollowRequest(followerId: string, userId: string): Promise<IFollower | null>
@@ -14,4 +15,5 @@ export interface IConnectionRepository{
     acceptFriendRequest(requestId: string): Promise<void>
     rejectFriendRequest(requestId: string): Promise<void>
     getFollowRequestById(requestId: string): Promise<{ userId: string, followerId: string } | null>
+    handleFetchSuggestions(): Promise<IUser[]>
 }

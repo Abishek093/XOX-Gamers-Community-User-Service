@@ -1,7 +1,9 @@
 import amqp from 'amqplib/callback_api';
+const rabbitmqUrl = `amqp://${process.env.RABBITMQ_HOST || 'localhost'}`;
+
 
 export const consumeQueue = (queueName: string, callback: (message: any) => void): void => {
-  amqp.connect('amqp://localhost', (connectError, connection) => {
+  amqp.connect(rabbitmqUrl, (connectError, connection) => {
     if (connectError) {
       throw connectError;
     }

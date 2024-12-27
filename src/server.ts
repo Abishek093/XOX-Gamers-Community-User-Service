@@ -104,6 +104,8 @@ import CustomError from './utils/CustomError'
 import { handleResponse } from './utils/ResponseHandler'
 import { ErrorRequestHandler } from 'express';
 import fs from 'fs';
+import { startQueueConsumer } from './services/queueService';
+import { getRedisClient } from './services/redisClient'
 
 const app = express()
 const server = createServer(app)
@@ -146,7 +148,8 @@ app.use(((err: CustomError, req, res, next) => {
     }
 }) as ErrorRequestHandler);
 
-connectDB().then(() => {
+connectDB().then(async() => {
+    startQueueConsumer();
     server.listen(PORT, () => {
         console.log(`User service server running on http://localhost:${PORT}`);
     });

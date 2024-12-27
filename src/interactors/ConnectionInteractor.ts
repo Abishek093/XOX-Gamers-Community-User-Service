@@ -1,6 +1,7 @@
 import { UserDetails } from "../entities/Types";
 import { IConnectionInteractor } from "../interfaces/IConnectionInteractor";
 import { Follower, IFollower, IFollowerWithDetails } from "../Models/FollowModel";
+import { IUser } from "../Models/UserModel";
 import { ConnectionRepository } from "../repositories/ConnectionRepository";
 import CustomError from "../utils/CustomError";
 
@@ -171,6 +172,19 @@ export class ConnectionInteractor implements IConnectionInteractor {
       }else{
         throw new CustomError("Follow request not found",404)
       }
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      } else {
+        console.error(error);
+        throw new CustomError("Internal Server Error", 500);
+      }
+    }
+  }
+
+  async handleFetchSuggestions(): Promise<IUser[]> {
+    try {
+      return await this.repository.handleFetchSuggestions();
     } catch (error) {
       if (error instanceof CustomError) {
         throw error;

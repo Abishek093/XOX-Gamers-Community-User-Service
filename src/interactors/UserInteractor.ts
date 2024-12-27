@@ -1,5 +1,3 @@
-// UserInteractor.ts
-
 import { User } from "../entities/User";
 import { IUserInteractor } from "../interfaces/IUserInteractor";
 import { IUserRepository } from "../interfaces/IUserRepository";
@@ -16,6 +14,10 @@ import { AuthenticatedUser, AuthResponse } from "../entities/Types";
 import { publishToQueue } from "../services/RabbitMQPublisher";
 // import { publishUserCreationMessages } from "../queues/circuitBreaker";
 import { PublishUserData } from "../entities/Types";
+import { profile } from "console";
+import redisService from "../services/redisClient";
+import { json } from "stream/consumers";
+
 
 export class UserInteractor implements IUserInteractor {
   private repository: IUserRepository;
@@ -31,7 +33,7 @@ export class UserInteractor implements IUserInteractor {
   async createUser(userDTO: UserSignupDTO): Promise<string> {
     try {
       const existingUser = await this.repository.findUserByEmail(userDTO.email);
-      if (existingUser) {
+      if (existingUser && existingUser.isVerified === true) {
         throw new CustomError("User with this email already exists", 409);
       }
 
@@ -88,6 +90,37 @@ export class UserInteractor implements IUserInteractor {
         };
   
         await this.broker.publishUserCreationMessage(userMessage )
+        await this.broker.publishStreamingServiceUserCreation(userMessage);
+
+        const userMessageToAdminService = {
+          _id: verifiedUser.id,
+          email: verifiedUser.email,
+          username: verifiedUser.userName,
+          displayName: verifiedUser.displayName,
+          dateOfBirth: verifiedUser.dateOfBirth,
+          profileImage: verifiedUser.profileImage,
+          bio: verifiedUser.bio,
+          createdAt: verifiedUser.createdAt,
+          updatedAt: verifiedUser.updatedAt,
+          isVerified: verifiedUser.isVerified,
+          isGoogleUser: verifiedUser.isGoogleUser,
+          isBlocked: verifiedUser.isBlocked,
+        };
+
+        await this.broker.PublishUserCreationMessageAdminServices(userMessageToAdminService)
+
+        await redisService.set(
+          `user:${verifiedUser.id}`, 
+          JSON.stringify({
+            userId: verifiedUser.id,
+            email: verifiedUser.email,
+            username: verifiedUser.userName,
+            createdAt: verifiedUser.createdAt,
+            status: "active"
+          }),
+          'EX', 
+          30 * 24 * 60 * 60  
+        );
       }
     } catch (error) {
       if (error instanceof CustomError) {
@@ -240,6 +273,21 @@ export class UserInteractor implements IUserInteractor {
         titleImage: existingUser.titleImage,
         bio: existingUser.bio,
       };
+      const redisUserData = JSON.stringify({
+        userId: existingUser.id,
+        email: existingUser.email,
+        username: existingUser.userName,
+        createdAt: existingUser.createdAt,
+        status: "active",
+      });
+  
+      await redisService.set(
+        `user:${existingUser.id}`,
+        redisUserData, 
+        'EX', 
+        30 * 24 * 60 * 60 
+      );
+
       return { user, accessToken, refreshToken };
 
     } catch (error) {
@@ -353,4 +401,57 @@ export class UserInteractor implements IUserInteractor {
       }
     }
   }
+
+  async updateProfilePassword(email: string, currentPassword: string, newPassword: string): Promise<void> {
+    try {
+      const user = await this.repository.findUserByEmail(email);
+      if (!user) {
+        throw new Error('User not found');
+      }
+  
+      if (user.isBlocked || !user.isVerified) {
+        throw new Error('Account is not verified');
+      }
+  
+      if (user.isGoogleUser) {
+        throw new Error('Cannot update password for Google users');
+      }
+      await this.repository.updateProfilePassword(user.id, currentPassword, newPassword);
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      } else {
+        console.error(error);
+        throw new CustomError("Internal Server Error", 500);
+      }
+    }
+  }
+
+  async checkUserName(username: string): Promise<boolean> {
+    try {
+      const existingUsername = await this.repository.findUserByUsername(username);
+      return !!existingUsername;
+    }  catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      } else {
+        console.error(error);
+        throw new CustomError("Internal Server Error", 500);
+      }
+    }
+  }
+
+  async blockUnblockUser(userId: string, isBlocked: boolean): Promise<void> {
+    try {
+        await this.repository.blockUnblockUser(userId, isBlocked)
+    } catch (error) {
+        if (error instanceof CustomError) {
+            throw error;
+        } else {
+            console.error(error);
+            throw new CustomError("Internal Server Error", 500);
+        }
+    }
+}
+
 }
