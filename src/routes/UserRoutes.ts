@@ -11,6 +11,12 @@ import { ProfileController } from "../controllers/ProfileController";
 import { ConnectionRepository } from "../repositories/ConnectionRepository";
 import { ConnectionInteractor } from "../interactors/ConnectionInteractor";
 import { ConnectionController } from "../controllers/ConnectionController";
+import { ChatRepository } from "../repositories/ChatRepository";
+import { ChatInteractor } from "../interactors/ChatInteractor";
+import { ChatController } from "../controllers/ChatController";
+import multer from 'multer';
+const upload = multer({ storage: multer.memoryStorage() });
+
 const UserRouter = Router()
 
 const userRepository = new UserRepository()
@@ -24,6 +30,11 @@ const profileInteractor = new ProfileInteractor(userRepository, profileRepositor
 const connectionRepository = new ConnectionRepository()
 const connectionInteractor = new ConnectionInteractor(connectionRepository)
 const connectionController = new ConnectionController(connectionInteractor)
+
+
+const chatRepository = new ChatRepository()
+const chatInteractor = new ChatInteractor(chatRepository)
+const chatController = new ChatController(chatInteractor)
 
 
 const authController = new AuthController(interactor)
@@ -52,7 +63,7 @@ UserRouter.post("/update-title-image", protectUser, profileController.updateTitl
 /** */
 
 /**Connection routes */
-UserRouter.get("/fetch-suggestions", protectUser, connectionController.fetchSuggestions.bind(connectionController))
+UserRouter.get("/fetch-suggestions", connectionController.fetchSuggestions.bind(connectionController))
 UserRouter.get('/searchUsers', protectUser, connectionController.fetchSearchResults.bind(connectionController))
 UserRouter.get("/users/:username", protectUser, connectionController.fetchUserDetails.bind(connectionController))
 UserRouter.post("/follower/:followerId/user/:userId", protectUser, connectionController.followUser.bind(connectionController))
@@ -65,6 +76,14 @@ UserRouter.post("/accept-friend-request/:requestId", protectUser, connectionCont
 UserRouter.post("/reject-friend-request/:requestId", protectUser, connectionController.rejectFriendRequest.bind(connectionController))
 /** */
 
+/**Chat routes */
+UserRouter.get(`/check-chat/initiator/:initiatorId/recipient/:recipientId`, protectUser, chatController.checkChat.bind(chatController));
+UserRouter.post(`/new-chat/initiator/:initiatorId/recipient/:recipientId`, protectUser, chatController.newChat.bind(chatController));
+UserRouter.get(`/fetch-conversations/:userId`, protectUser, chatController.fetchConversations.bind(chatController));
+UserRouter.get(`/fetch-messages/:chatId`, protectUser, chatController.fetchMessages.bind(chatController));
+UserRouter.get(`/fetch-last-message/:chatId`, protectUser, chatController.fetchLastMessage.bind(chatController));
+UserRouter.post('/delete-message/:id',protectUser, chatController.deleteMessage.bind(chatController));
+UserRouter.get('/fetch-unread-counts/:userId', protectUser, chatController.fetchUnreadCountsController.bind(chatController));
 
-
+/** */
 export default UserRouter

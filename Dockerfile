@@ -16,6 +16,10 @@ RUN npx tsc -p tsconfig.json
 
 
 FROM node:23-slim
+
+RUN apt-get update && apt-get install -y curl netcat-openbsd
+
+
 WORKDIR /usr/src/app
 
 COPY --from=install_deps /usr/src/app/dist ./dist
