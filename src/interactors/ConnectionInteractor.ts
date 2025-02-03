@@ -3,6 +3,7 @@ import { IConnectionInteractor } from "../interfaces/IConnectionInteractor";
 import { Follower, IFollower, IFollowerWithDetails } from "../Models/FollowModel";
 import { IUser } from "../Models/UserModel";
 import { ConnectionRepository } from "../repositories/ConnectionRepository";
+import { publishToQueue } from "../services/RabbitMQPublisher";
 import CustomError from "../utils/CustomError";
 
 export class ConnectionInteractor implements IConnectionInteractor {
@@ -28,6 +29,17 @@ export class ConnectionInteractor implements IConnectionInteractor {
       });
 
       await this.repository.followUser(follow.followerId.toString(), follow.userId.toString(), follow.status);
+
+      await publishToQueue('content-service-follow', {
+        type: 'follow_request',
+        data: {
+          followerId,
+          userId,
+          status: 'Requested'
+        }
+      });
+
+
       return { status: 'Requested', message: 'Follow request sent' };
 
     } catch (error) {
@@ -44,6 +56,13 @@ export class ConnectionInteractor implements IConnectionInteractor {
   async unfollowUser(userId: string, followerId: string): Promise<void> {
     try {
       const result = await this.repository.handleUnfollow(userId, followerId)
+      await publishToQueue('content-service-follow', {
+        type: 'unfollow',
+        data: {
+          userId,
+          followerId
+        }
+      });
     } catch (error) {
       if (error instanceof CustomError) {
         throw error;
@@ -150,6 +169,16 @@ export class ConnectionInteractor implements IConnectionInteractor {
       if (followRequest) {
         const { userId, followerId } = followRequest;
         await this.repository.acceptFriendRequest(requestId)
+
+        await publishToQueue('content-service-follow', {
+          type: 'follow_accept',
+          data: {
+            requestId,
+            userId,
+            followerId,
+            status: 'Accepted'
+          }
+        });
       }else{
         throw new CustomError("Follow request not found",404)
       }
@@ -169,6 +198,15 @@ export class ConnectionInteractor implements IConnectionInteractor {
       if (followRequest) {
         const { userId, followerId } = followRequest;
         await this.repository.rejectFriendRequest(requestId)
+        await publishToQueue('content-service-follow', {
+          type: 'follow_reject',
+          data: {
+            requestId,
+            userId,
+            followerId,
+            status: 'Rejected'
+          }
+        });
       }else{
         throw new CustomError("Follow request not found",404)
       }

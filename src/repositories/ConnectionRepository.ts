@@ -38,6 +38,7 @@ export class ConnectionRepository implements IConnectionRepository {
                status: status,
             });
             await follow.save();
+            
          }
       } catch (error) {
          throw new CustomError("Error following user: " + (error instanceof Error ? error.message : "Unknown error"), 500);

@@ -68,12 +68,12 @@ export type PublishUserData = {
     isBlocked?: boolean;
 }
 
-export type PublishProfileImageUpdate={
+export type PublishProfileImageUpdate = {
     userId: string,
     profileImage?: string
 }
 
-export type userMessageToAdminService={
+export type userMessageToAdminService = {
     _id: string
     email: string;
     username: string;
@@ -86,4 +86,24 @@ export type userMessageToAdminService={
     isVerified: boolean;
     isGoogleUser: boolean;
     isBlocked: boolean;
+}
+
+import { ObjectId } from 'mongodb'; 
+
+export interface PopulatedMessage {
+    chatId: ObjectId;
+    sender: {
+      _id: ObjectId;
+      displayName: string;
+      profileImage: string;
+    };
+    content: string;
+    media: { type: "image" | "video" | "audio" | "pdf" | "gif"; url: string }[]; // Updated
+    repliedTo: ObjectId | null;
+    seen: boolean;
+    _id: ObjectId;
+    createdAt: Date;
+    updatedAt: Date;
+    __v: number;
   }
+  
